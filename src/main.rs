@@ -23,6 +23,7 @@ fn clear_screen() {
         match std::process::Command::new("clear").status() {
             Ok(_) => {
                 println!("Cleared screen using 'clear' command.");
+                print!("\x1B[2J\x1B[1;1H");
             }
             Err(_) => {
                 // Fallback: ANSI clear screen + move cursor to 1;1
