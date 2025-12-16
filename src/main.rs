@@ -2,7 +2,11 @@
 #[path = "without-serde-derive.rs"]
 mod without_serde_derive;
 
+#[path="my-utils.rs"]
+mod my_utils;
+
 use without_serde_derive::test;
+use my_utils::clear_screen;
 
 fn main() {
     // clear the terminal (attempt platform-specific command, fallback to ANSI)
@@ -10,25 +14,23 @@ fn main() {
 
     // call the public function from the module
     test();
-}
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    clear_screen();
 
-fn clear_screen() {
-    // On Windows, use `cmd /C cls`. On Unix-like systems, try `clear`.
-    if cfg!(target_os = "windows") {
-        let _ = std::process::Command::new("cmd")
-            .args(&["/C", "cls"])
-            .status();
-    } else {
-        // Try external `clear` command first; if it fails, print ANSI escape
-        match std::process::Command::new("clear").status() {
-            Ok(_) => {
-                println!("Cleared screen using 'clear' command.");
-                print!("\x1B[2J\x1B[1;1H");
-            }
-            Err(_) => {
-                // Fallback: ANSI clear screen + move cursor to 1;1
-                print!("\x1B[2J\x1B[1;1H");
-            }
-        }
-    }
+    let countdown = [1,2,4,5,6];
+    let number = countdown[2];
+    let number  = number + 2;
+    println!("Final number: {}", number);
+
+    let number = countdown.get(3); /// this thing return Option<&i32> => is enum not value
+    // let number = match number {
+    //     Some(&num) => num + 3,
+    //     None => 0,
+    // };
+    // let number = number.map(|&num| num + 3).unwrap_or(0);
+    // let number = number.unwrap_or(&0) + 3;
+    // let number = number.copied().unwrap_or(0) + 3;
+    // let number = number.cloned().unwrap_or(0) + 3;
+    let number = number.unwrap() + 3;
+    println!("Final number after get: {}", number);
 }
