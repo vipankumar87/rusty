@@ -10,7 +10,7 @@ use my_utils::clear_screen;
 use std::fs;
 use std::io;
 use chrono::Local;
-
+use std::io::Read;
 struct User {
     id: i32,
 }
@@ -133,7 +133,17 @@ fn main() {
     let formatted_date = current_date.format("%d-%m-%Y").to_string();
     let message = format!("testing {}", formatted_date);
 
-    std::io::stdin().read_line(&mut String::new()).unwrap();
+    println!("Do you want to execute git commands? Type 'yes' to proceed:");
+
+    let mut git_execute = String::new();
+    std::io::stdin().read_line(&mut git_execute).unwrap()
+        .to_string();
+
+    git_execute = git_execute.trim().to_string();
+    if(git_execute != "yes"){
+        println!("Git commands execution skipped. {:?}", git_execute);
+        return;
+    }
     std::process::Command::new("git").args(["add","."]).status().unwrap();
     std::process::Command::new("git").args(["commit","-am", &message]).status().unwrap();
     std::process::Command::new("git").args(["push","--all"]).status().unwrap();
