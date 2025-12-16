@@ -1,89 +1,33 @@
-use serde::{
-    ser::{Serialize, SerializeStruct, Serializer},
-    de::{Deserialize, Deserializer, Visitor, MapAccess},
-};
-use std::fmt;
+// Include the file whose name contains hyphens by specifying its path
+#[path = "without-serde-derive.rs"]
+mod without_serde_derive;
 
-#[derive(Debug)]
-struct User {
-    id: u32,
-    name: String,
-}
-
-/* ---------- Serialize (MANUAL) ---------- */
-impl Serialize for User {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("User", 2)?;
-        state.serialize_field("id", &self.id)?;
-        state.serialize_field("name", &self.name)?;
-        state.end()
-    }
-}
-
-/* ---------- Deserialize (MANUAL) ---------- */
-impl<'de> Deserialize<'de> for User {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        enum Field {
-            Id,
-            Name,
-        }
-
-        struct UserVisitor;
-
-        impl<'de> Visitor<'de> for UserVisitor {
-            type Value = User;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("struct User")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> Result<User, V::Error>
-            where
-                V: MapAccess<'de>,
-            {
-                let mut id = None;
-                let mut name = None;
-
-                while let Some(key) = map.next_key::<String>()? {
-                    match key.as_str() {
-                        "id" => id = Some(map.next_value()?),
-                        "name" => name = Some(map.next_value()?),
-                        _ => {
-                            let _: serde::de::IgnoredAny = map.next_value()?;
-                        }
-                    }
-                }
-
-                let id = id.ok_or_else(|| serde::de::Error::missing_field("id"))?;
-                let name = name.ok_or_else(|| serde::de::Error::missing_field("name"))?;
-
-                Ok(User { id, name })
-            }
-        }
-
-        deserializer.deserialize_struct(
-            "User",
-            &["id", "name"],
-            UserVisitor,
-        )
-    }
-}
+use without_serde_derive::test;
 
 fn main() {
-    let user = User {
-        id: 1,
-        name: "Alice".to_string(),
-    };
+    // clear the terminal (attempt platform-specific command, fallback to ANSI)
+    clear_screen();
 
-    let json = serde_json::to_string_pretty(&user).unwrap();
-    println!("{}", json);
+    // call the public function from the module
+    test();
+}
 
-    let parsed: User = serde_json::from_str(&json).unwrap();
-    println!("{:?}", parsed);
+fn clear_screen() {
+    // On Windows, use `cmd /C cls`. On Unix-like systems, try `clear`.
+    if cfg!(target_os = "windows") {
+        let _ = std::process::Command::new("cmd")
+            .args(&["/C", "cls"])
+            .status();
+    } else {
+        // Try external `clear` command first; if it fails, print ANSI escape
+        match std::process::Command::new("clear").status() {
+            Ok(_) => {
+                println!("Cleared screen using 'clear' command.");
+            }
+            Err(_) => {
+                // Fallback: ANSI clear screen + move cursor to 1;1
+                print!("\x1B[2J\x1B[1;1H");
+            }
+        }
+    }
 }
