@@ -133,6 +133,7 @@ fn main() {
     let formatted_date = current_date.format("%d-%m-%Y").to_string();
     let message = format!("testing {}", formatted_date);
 
+    std::io::stdin().read_line(&mut String::new()).unwrap();
     std::process::Command::new("git").args(["add","."]).status().unwrap();
     std::process::Command::new("git").args(["commit","-am", &message]).status().unwrap();
     std::process::Command::new("git").args(["push","--all"]).status().unwrap();
