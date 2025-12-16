@@ -135,4 +135,5 @@ fn main() {
 
     std::process::Command::new("git").args(["add","."]).status().unwrap();
     std::process::Command::new("git").args(["commit","-am", &message]).status().unwrap();
+    std::process::Command::new("git").args(["push","--all"]).status().unwrap();
 }
